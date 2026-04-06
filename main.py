@@ -1,6 +1,20 @@
-def main():
-    print("Hello from creditscore!")
+from fastapi import FastAPI
+from pydantic import BaseModel
+import joblib
+
+class ClientData(BaseModel):
+    age: int
+    income: float
+    education: bool
+    work: bool
+    car: bool    
+
+app = FastAPI()
+model = joblib.load("model.pkl")
 
 
-if __name__ == "__main__":
-    main()
+@app.post("/score")
+def score(data: ClientData):
+    features = [data.age, data.income, data.education, data.work, data.car]
+    approved = not model.predict([features])[0].item()
+    return {"approved": approved}
